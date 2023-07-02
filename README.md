@@ -1,7 +1,4 @@
-+-+-+-+-+-+-+<br>
-|p|o|r|t|e|r|<br>
-+-+-+-+-+-+-+<br>
-
+# porter
 **porter** is a simple cli tool used for scanning ports and Comes 
 with very simplified usage and greate options.
 
