@@ -1,5 +1,9 @@
 package main
 
+import (
+    "github.com/retro49/porter/plogger"
+)
+
 var (
     ARG_OPT_PORTER_HELP string
     ARG_OPT_PORTER_HOST string
@@ -15,4 +19,9 @@ var (
 )
 
 func main(){
+    logger := plogger.NewPlogger()
+    logger.Log("head log", "logging")
+    logger.Warn("head warn", "warning")
+    logger.Error("head error", "error")
+    logger.Debug("head debug", "debugging")
 }
