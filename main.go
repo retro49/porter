@@ -19,4 +19,5 @@ func main() {
     arg_poter_opt_port := parser.Int("p", "port", &argparse.Options{Required: false, Default: 1, Help: ARG_PORTER_USAGE_PORT})
     arg_porter_opt_output := parser.String("o", "output", &argparse.Options{Required: false, Help: ARG_PORTER_USAGE_OUTPUT, Default: "stdout"})
     arg_porter_opt_format := parser.Selector("f", "format", []string{"normal", "json"}, &argparse.Options{Required: false, Default: "normal", Help: ARG_PORTER_USAGE_FORMAT})
+    arg_porter_opt_scan_mode := parser.Selector("m", "mode", []string{"normal", "fast"}, &argparse.Options{Required: false, Default: "normal", Help: ""})
 }
