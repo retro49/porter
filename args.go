@@ -3,17 +3,25 @@ package main
 import "fmt"
 
 const (
-	ARG_HELP_PORTER_HELP    = "-h | --help to display this and exit"
-	ARG_HELP_PORTER_HOST    = "-H | --host to specify host to scan"
-	ARG_HELP_PORTER_NETWORK = "-n | --network  to specify network type"
-	ARG_HELP_PORTER_START   = "-S | --start to specify start port address"
-	ARG_HELP_PORTER_END     = "-E | --end to specify ending port address"
-	ARG_HELP_PORTER_RANGE   = "-r | --range to specify a port as range of values"
-	ARG_HELP_PORTER_SKIP    = "-k | --skip to specify port not to scan"
-	ARG_HELP_PORTER_STEP    = "-e | --step to specify a step for scanning ports"
-	ARG_HELP_PORTER_PORT    = "-p | --port to specify a single port to scan"
-	ARG_HELP_PORTER_OUTPUT  = "-o | --output to specify output file"
-	ARG_HELP_PORTER_FORMAT  = "-f | --format to specify output format"
+	ARG_PORTER_USAGE_HELP    = "-h | --help to display this and exit"
+	ARG_PORTER_USAGE_HOST    = "-H | --host to specify host to scan"
+	ARG_PORTER_USAGE_NETWORK = "-n | --network  to specify network type"
+	ARG_PORTER_USAGE_START   = "-s | --start to specify start port address"
+	ARG_PORTER_USAGE_END     = "-e | --end to specify ending port address"
+	ARG_PORTER_USAGE_RANGE   = "-r | --range to specify a port as range of values"
+	ARG_PORTER_USAGE_SKIP    = "-k | --skip to specify port(s) not to scan"
+	ARG_PORTER_USAGE_STEP    = "-S | --step to specify a step for scanning ports"
+	ARG_PORTER_USAGE_PORT    = "-p | --port to specify a single port to scan"
+	ARG_PORTER_USAGE_OUTPUT  = "-o | --output to specify output file"
+	ARG_PORTER_USAGE_FORMAT  = "-f | --format to specify output format"
+)
+
+const (
+	ARG_PORTER_DEFAULT_HOST    string = "127.0.0.1"
+	ARG_PORTER_DEFAULT_NETWORK string = "tcp"
+	ARG_PORTER_DEFAULT_START   int    = 1
+	ARG_PORTER_DEFAULT_END     int    = (1 << 16) - 1
+	ARG_PORTER_DEFAULT_RANGE   string = "1"
 )
 
 // options are in order so take care.
@@ -29,7 +37,9 @@ provided network type.
 
 use %s 
 use %s
+if not provided localhost (127.0.0.1) will be used by default
 use %s 
+By default tcp netowrk is used
 available options for a network type is tcp, udp and ip
 use %s
 start port must be 1, if not provided by default it is 1
@@ -39,8 +49,8 @@ scan is 65535, if not provided the default will be 65535
 use %s
 This format provided an easy representation of start and end option.
 Inorder to use this option it is must that to provide a range syntax
-using "-", Eg. 1-80, in this option 80 is exclusive
-using "-=", Eg. 1-=80, specifies 80 is inclusive.
+using "..", Eg. 1..80, in this option 80 is exclusive
+using "..=", Eg. 1..=80, specifies 80 is inclusive.
 use %s
 By using this option it is possible to skip a port to scan.
 This argument can take a single or multiple ports.
@@ -54,16 +64,16 @@ use %s
 Format option supports the result output as a standart text or json result.
     `,
 
-		ARG_HELP_PORTER_HELP,
-		ARG_HELP_PORTER_HOST,
-		ARG_HELP_PORTER_NETWORK,
-		ARG_HELP_PORTER_START,
-		ARG_HELP_PORTER_END,
-		ARG_HELP_PORTER_RANGE,
-		ARG_HELP_PORTER_SKIP,
-		ARG_HELP_PORTER_STEP,
-		ARG_HELP_PORTER_PORT,
-		ARG_HELP_PORTER_OUTPUT,
-		ARG_HELP_PORTER_FORMAT,
+		ARG_PORTER_USAGE_HELP,
+		ARG_PORTER_USAGE_HOST,
+		ARG_PORTER_USAGE_NETWORK,
+		ARG_PORTER_USAGE_START,
+		ARG_PORTER_USAGE_END,
+		ARG_PORTER_USAGE_RANGE,
+		ARG_PORTER_USAGE_SKIP,
+		ARG_PORTER_USAGE_STEP,
+		ARG_PORTER_USAGE_PORT,
+		ARG_PORTER_USAGE_OUTPUT,
+		ARG_PORTER_USAGE_FORMAT,
 	)
 )
