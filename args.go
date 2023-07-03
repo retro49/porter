@@ -14,6 +14,7 @@ const (
 	ARG_PORTER_USAGE_PORT    = "-p | --port to specify a single port to scan"
 	ARG_PORTER_USAGE_OUTPUT  = "-o | --output to specify output file"
 	ARG_PORTER_USAGE_FORMAT  = "-f | --format to specify output format"
+        ARG_PORTER_USAGE_MODE    = "-m | --mode to specify scan mode"
 )
 
 const (
@@ -62,6 +63,8 @@ use %s
 use %s
 use %s
 Format option supports the result output as a standart text or json result.
+use %s
+whether to scan in a single or concurrent thread
     `,
 
 		ARG_PORTER_USAGE_HELP,
@@ -75,5 +78,6 @@ Format option supports the result output as a standart text or json result.
 		ARG_PORTER_USAGE_PORT,
 		ARG_PORTER_USAGE_OUTPUT,
 		ARG_PORTER_USAGE_FORMAT,
+                ARG_PORTER_USAGE_MODE,
 	)
 )
