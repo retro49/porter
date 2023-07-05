@@ -2,10 +2,12 @@ package main
 
 import (
 	_ "github.com/retro49/porter/plogger"
-	"github.com/akamensky/argparse"
+	_ "github.com/akamensky/argparse"
+        "github.com/retro49/porter/scanner"
 )
 
 func main() {
+    /*
     // argparse is the best...
     parser := argparse.NewParser("porter", ARG_MANUAL)
     arg_porter_opt_help := parser.String("h", "help", &argparse.Options{Required: false, Help: ARG_PORTER_USAGE_HELP})
@@ -20,4 +22,6 @@ func main() {
     arg_porter_opt_output := parser.String("o", "output", &argparse.Options{Required: false, Help: ARG_PORTER_USAGE_OUTPUT, Default: "stdout"})
     arg_porter_opt_format := parser.Selector("f", "format", []string{"normal", "json"}, &argparse.Options{Required: false, Default: "normal", Help: ARG_PORTER_USAGE_FORMAT})
     arg_porter_opt_scan_mode := parser.Selector("m", "mode", []string{"normal", "fast"}, &argparse.Options{Required: false, Default: "normal", Help: ""})
+    */
+    scanner.Decoder()
 }
