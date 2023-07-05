@@ -23,5 +23,4 @@ func main() {
     arg_porter_opt_format := parser.Selector("f", "format", []string{"normal", "json"}, &argparse.Options{Required: false, Default: "normal", Help: ARG_PORTER_USAGE_FORMAT})
     arg_porter_opt_scan_mode := parser.Selector("m", "mode", []string{"normal", "fast"}, &argparse.Options{Required: false, Default: "normal", Help: ""})
     */
-    scanner.Decoder()
 }
