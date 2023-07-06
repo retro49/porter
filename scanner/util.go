@@ -8,7 +8,6 @@ import (
 )
 
 const JSON_PATH string = "/usr/share/porter/ports.json"
-const JSON_TEST_PATH string = JSON_PATH
 
 var LOADER_ERROR_READING_FILE_SIZE error = errors.New("error reading file size")
 var LOADER_ERROR_OPENING_FILE error = errors.New("error opening file")
@@ -61,14 +60,14 @@ func (p portInfo)GetPort()int{
 func readJSON()([]byte, error){
     var fileSize int64 = 0
     // get the file status
-    if status, err := os.Stat(JSON_TEST_PATH); err != nil{
+    if status, err := os.Stat(JSON_PATH); err != nil{
         return nil, LOADER_ERROR_READING_FILE_SIZE 
     } else {
         fileSize = status.Size()
     }
     buffer := make([]byte, fileSize)
     // read into the file
-    jsonFile, err := os.Open(JSON_TEST_PATH)
+    jsonFile, err := os.Open(JSON_PATH)
     if err != nil {
         return nil, LOADER_ERROR_OPENING_FILE 
     }
