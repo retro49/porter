@@ -1,10 +1,11 @@
 package scanner
 
 import (
-    "errors"
-    "fmt"
-    "net"
-    "sync"
+	"errors"
+	"fmt"
+	"net"
+
+	"github.com/retro49/porter/plogger"
 )
 
 type scanner struct {
@@ -44,8 +45,7 @@ func NewScanner(network, host string, ports []int) (*scanner, error){
     }, nil
 }
 
-func (s scanner)scanPorts(response chan any, wg *sync.WaitGroup){
-    defer wg.Done()
+func (s scanner)scanPorts(response chan any){
     ports := make([]int, 0)
     for _, port := range s.ports {
         _, err := net.Dial(s.network, fmt.Sprintf("%s:%d", s.host, port))
@@ -60,14 +60,15 @@ func (s scanner)scanPorts(response chan any, wg *sync.WaitGroup){
 func (s scanner)ScanWithInfo() []portInfo{
     portScannerChannel := make(chan interface{})
     jsonLoaderChannel := make(chan interface{})
-    var waiter sync.WaitGroup
-    waiter.Add(2)
-    go s.scanPorts(portScannerChannel, &waiter)
-    go LoadPortInfo(jsonLoaderChannel, &waiter)
-    waiter.Wait()
+    go s.scanPorts(portScannerChannel)
+    go LoadPortInfo(jsonLoaderChannel)
 
     jsonResponse := <- jsonLoaderChannel
     portResponse := <- portScannerChannel
+
+    if jsonResponse == nil {
+        plogger.NewPlogger().Error("error json response" , "nil json result")
+    }
 
     jsonPortInfo := jsonResponse.(map[string]map[string]string)
     scannedPorts := portResponse.([]int)
@@ -75,7 +76,7 @@ func (s scanner)ScanWithInfo() []portInfo{
 
     // load into result
     for _, scannedPort := range scannedPorts{
-        var key string = fmt.Sprintf("%s/%d", s.network, scannedPort)
+        var key string = fmt.Sprintf("%d/%s", scannedPort, s.network)
         var pf portInfo
         if info, found := jsonPortInfo[key]; !found{
             pf = NewPortInfo("", "", scannedPort)

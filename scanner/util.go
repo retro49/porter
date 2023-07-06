@@ -3,12 +3,12 @@ package scanner
 import (
     "encoding/json"
     "errors"
-    "sync"
     "os"
+    "github.com/retro49/porter/plogger"
 )
 
 const JSON_PATH string = "/usr/share/porter/ports.json"
-const JSON_TEST_PATH string = "$HOME/tests/porter/ports.json"
+const JSON_TEST_PATH string = "./ports.json" /* "$HOME/tests/porter/ports.json" */
 
 var LOADER_ERROR_READING_FILE_SIZE error = errors.New("error reading file size")
 var LOADER_ERROR_OPENING_FILE error = errors.New("error opening file")
@@ -44,13 +44,13 @@ func (p portInfo)GetName() string {
 }
 
 // returns the description of the port.
-func (p portInfo)GetDescription()string{
+func (p portInfo)GetDescription() string {
     if p.Description == ""{
         return "unkown"
     }
+
     return p.Description
 }
-
 
 // returns the port number
 func (p portInfo)GetPort()int{
@@ -83,23 +83,24 @@ func readJSON()([]byte, error){
 }
 
 // loads the json and sends the result in the channel
-func LoadPortInfo(ch chan any, wg *sync.WaitGroup){
-    defer wg.Done()
+func LoadPortInfo(ch chan any){
     // validate the json file
     jsonData, err := readJSON()
     if err != nil {
+        plogger.NewPlogger().Error("read json error", "unable to read port json file")
         ch <- nil
     }
 
     validJSON := json.Valid(jsonData)
     if !validJSON {
+        plogger.NewPlogger().Error("invalid json", "error while validating json")
         ch <- nil
     }
     // json unmarshaller
     portInfo := make(map[string]map[string]string)
     if err := json.Unmarshal(jsonData, &portInfo); err != nil{
+        plogger.NewPlogger().Error("error decodig", "error while decoding json")
         ch <- nil
     }
-
     ch <- portInfo
 }
