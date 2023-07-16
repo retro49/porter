@@ -33,7 +33,7 @@ func NewScanner(network, host string, ports []int) (*scanner, error){
     }
 
     for _, port := range ports{
-        if port < 0 || port >= 1 << 16 {
+        if port < 0 || port >= (1 << 16) {
             return nil, ERROR_INVALID_PORT_NUMBER 
         }
     }

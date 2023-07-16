@@ -25,18 +25,18 @@ func NewPlogger()plogger{
     }
 }
 
-func (p plogger)Log(key, msg string){
-    p.Logger.Printf("%s: %s", key, msg)
+func (p plogger)Log(key, msg any){
+    p.Logger.Printf("%v: %v", key, msg)
 }
 
-func (p plogger)Debug(key, msg string){
-    p.Logger.Printf("%s%s%s: %s", TERM_COLOR_DEBUG, key, TERM_COLOR_NORMAL, msg)
+func (p plogger)Debug(key, msg any){
+    p.Logger.Printf("%s%v%s: %v", TERM_COLOR_DEBUG, key, TERM_COLOR_NORMAL, msg)
 }
 
-func (p plogger)Warn(key, msg string){
-    p.Logger.Printf("%s%s%s: %s", TERM_COLOR_WARN, key, TERM_COLOR_NORMAL, msg)
+func (p plogger)Warn(key, msg any){
+    p.Logger.Printf("%s%v%s: %v", TERM_COLOR_WARN, key, TERM_COLOR_NORMAL, msg)
 }
 
-func (p plogger)Error(key, msg string){
-    p.Logger.Printf("%s%s%s: %s", TERM_COLOR_ERROR, key, TERM_COLOR_NORMAL, msg)
+func (p plogger)Error(key, msg any){
+    p.Logger.Printf("%s%v%s: %v", TERM_COLOR_ERROR, key, TERM_COLOR_NORMAL, msg)
 }
