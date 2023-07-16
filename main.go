@@ -120,6 +120,7 @@ func main() {
 
 	if *argHelp {
 		plogger.NewPlogger().Log("HELP", ARG_MANUAL)
+                return
 	}
 
         if *argVersion{
