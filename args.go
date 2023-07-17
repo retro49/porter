@@ -15,8 +15,8 @@ const (
 	USAGE_PORT    = "to specify a single port to scan"
 	USAGE_OUTPUT  = "to specify output file"
 	USAGE_FORMAT  = "to specify output format"
-        USAGE_MODE    = "to specify scan mode"
         USAGE_THREADS = "to specify how  many threads to spawn"
+        USAGE_TIMEOUT = "to specify the timeout to wait for  each port"
 )
 
 const (
@@ -29,6 +29,7 @@ const (
         DEFAULT_OUTPUT  string = ""
         DEFAULT_FORMAT  string = "normal"
         DEFAULT_THREADS int    = 1
+        DEFAULT_TIMEOUT int    = 5
 )
 
 // options are in order so take care.

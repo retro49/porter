@@ -120,6 +120,14 @@ func main() {
 		},
 	)
 
+	argTimeout := parser.Int("w", "wait",
+		&argparse.Options{
+			Default:  DEFAULT_TIMEOUT,
+			Required: false,
+			Help:     USAGE_TIMEOUT,
+		},
+	)
+
 	argStep := parser.Int("S", "step",
 		&argparse.Options{
 			Default:  1,
@@ -159,19 +167,34 @@ func main() {
 
 	if *argStart < 1 || *argStart > DEFAULT_END {
 		logger.Error("start", "given start port is not a valid port")
+		logger.Warn("help", "read the help messag on how to specify starting port number")
 		os.Exit(2)
 	}
 
 	if *argEnd < 1 || *argEnd > DEFAULT_END {
 		logger.Error("end", "given end port is not a valid port")
+		logger.Warn("help", "read the help messag on how to specify ending port number")
 		os.Exit(3)
 	}
 
 	if *argStep < 1 || *argStep > DEFAULT_END {
 		logger.Error("end", "given end port is not a valid port")
+		logger.Warn("help", "read the help messag on how to specify step")
 		os.Exit(4)
 	}
 
+	if *argThreads < 1 {
+		logger.Error("threads", "given amount of  threads is not correct")
+		logger.Warn("help", "read the help messag on threads")
+                os.Exit(8)
+	}
+
+	if *argTimeout < 1 {
+		logger.Error("timeout", "given amount of timeout is not correct")
+		logger.Warn("help", "read the help messag on threads")
+                os.Exit(9)
+
+	}
 	// scan single port
 	if *argPort != -1 {
 		if *argPort < 1 || *argPort > DEFAULT_END {
