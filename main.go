@@ -179,9 +179,20 @@ func main() {
 			os.Exit(5)
 		}
 	} else if *argRange != "" {
-		// take it from here okay bud...
-		// range scan... do it!
-
+		// check the range sanity here.
+		if !strings.Contains(*argRange, "..") {
+			logger.Error("range", "given range format is not correct")
+			logger.Warn("help", "read the help messag on how to format a range")
+			os.Exit(6)
+		}
+		start, end, err := fromRange(*argRange)
+		if err != nil {
+			logger.Error("range", "given range error is not valid")
+			logger.Warn("help", "read the help messag on how to format a range")
+			os.Exit(7)
+		}
+		logger.Debug("range_start", start)
+		logger.Debug("range_end", end)
 	} else {
 		// a normal scan
 	}
