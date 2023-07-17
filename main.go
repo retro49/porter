@@ -1,12 +1,40 @@
 package main
 
 import (
+	"errors"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/akamensky/argparse"
 	"github.com/retro49/porter/plogger"
 	_ "github.com/retro49/porter/scanner"
 )
+
+func fromRange(s string) (int, int, error) {
+	isInclusive := strings.Contains(s, "=")
+	var splited []string
+	if isInclusive {
+		splited = strings.Split(s, "..=")
+	} else {
+		splited = strings.Split(s, "..")
+	}
+
+	start, err := strconv.ParseInt(splited[0], 10, 64)
+	if err != nil {
+		return -1, -1, errors.New("invalid number range format provided")
+	}
+
+	end, err := strconv.ParseInt(splited[1], 10, 64)
+	if err != nil {
+		return -1, -1, errors.New("invalid number range format provided")
+	}
+
+	if !isInclusive {
+		end = end - 1
+	}
+	return int(start), int(end), nil
+}
 
 func main() {
 	var logger = plogger.NewPlogger()
@@ -120,14 +148,14 @@ func main() {
 
 	if *argHelp {
 		plogger.NewPlogger().Log("HELP", ARG_MANUAL)
-                return
+		return
 	}
 
-        if *argVersion{
-            // this is a teporary version...
-            // replace the version with a real version.
-            logger.Debug("version", "1.0")
-        }
+	if *argVersion {
+		// this is a teporary version...
+		// replace the version with a real version.
+		logger.Debug("version", "1.0")
+	}
 
 	if *argStart < 1 || *argStart > DEFAULT_END {
 		logger.Error("start", "given start port is not a valid port")
