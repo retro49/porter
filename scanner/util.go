@@ -105,6 +105,7 @@ func LoadPortInfo(ch chan any) {
 
 // a scan info for  providing the scanner
 type ScanInfo struct {
+        Network   string
 	Host      string
 	StartPort int
 	EndPort   int
@@ -116,6 +117,7 @@ type ScanInfo struct {
 	Output    string
 }
 
+func (s ScanInfo) GetNetwork() string {return  s.Network}
 func (s ScanInfo) GetHost() string   { return s.Host }
 func (s ScanInfo) GetStart() int     { return s.StartPort }
 func (s ScanInfo) GetEnd() int       { return s.EndPort }

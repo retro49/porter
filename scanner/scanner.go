@@ -2,8 +2,10 @@ package scanner
 
 import (
 	"errors"
+	"fmt"
+	"net"
 	_ "net"
-	"sync"
+	"time"
 
 	"github.com/retro49/porter/plogger"
 )
@@ -85,10 +87,6 @@ func (s scanner)ScanWithInfo() []portInfo{
 }
 */
 
-type ScanCoordinator struct {
-	Info ScanInfo
-}
-
 func fromInfo(s ScanCoordinator) []int {
 	var ports []int
 blk:
@@ -123,24 +121,63 @@ func fromThreads(threads int, ports []int) [][]int {
 	return result
 }
 
+type ScanCoordinator struct {
+	Info ScanInfo
+}
+
 func (s ScanCoordinator) StartScan() {
-    /*
+	logger := plogger.NewPlogger()
+	// create the ports from the provided info
 	ports := fromInfo(s)
-	scanPorts := fromThreads(s.Info.GetThreads(), ports)
-        */
-        /*
-	for i := 0; i < s.Info.GetThreads(); i++ {
-		plogger.NewPlogger().Debug("length", scanPorts[i])
+	threads := fromThreads(s.Info.GetThreads(), ports)
+	threadChannel := make(chan []int, s.Info.GetThreads())
+	for _, thread := range threads {
+		// create a new scanner
+		scnr := scanner{
+			network: s.Info.GetNetwork(),
+			host:    s.Info.GetHost(),
+			timeout: time.Duration(s.Info.GetTimeout()),
+			ports:   thread,
+		}
+		go scnr.scan(threadChannel)
 	}
-        */
+	// retrive the scanned result
+	for i := 0; i < s.Info.GetThreads(); i++ {
+		openPorts := <-threadChannel
+		logger.Debug("open ports", openPorts)
+	}
 }
 
 type scanner struct {
 	ports   []int
 	network string
 	host    string
+	timeout time.Duration
 }
 
-func (s scanner) NewScanner(network, host string, ports []int, wg *sync.WaitGroup) {
-	defer wg.Done()
+func (s scanner) scan(ch chan []int) {
+	openPorts := make([]int, 0)
+	for _, port := range s.ports {
+		address := fmt.Sprintf("%s:%d", s.host, port)
+		ch := make(chan int)
+
+		go func(add string, c chan int) {
+			_, err := net.Dial(s.network, add)
+			if err != nil {
+				c <- -1
+			} else {
+				c <- port
+			}
+		}(address, ch)
+
+		select {
+		case <-time.After(s.timeout):
+			continue
+		case open := <-ch:
+			if open != -1 {
+				openPorts = append(openPorts, open)
+			}
+		}
+	}
+	ch <- openPorts
 }
