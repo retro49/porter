@@ -8,7 +8,8 @@ import (
 
 	"github.com/retro49/porter/plogger"
 )
-
+// hot remove...
+// just remove the logger in the scanner
 var ERROR_INVALID_PORT_NUMBER = errors.New("invalid port number")
 
 func fromInfo(s ScanCoordinator) []int {
