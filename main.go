@@ -1,5 +1,6 @@
 package main
 
+// timeout cannot be  zero take care.
 import (
 	"errors"
 	"os"
@@ -8,7 +9,7 @@ import (
 
 	"github.com/akamensky/argparse"
 	"github.com/retro49/porter/plogger"
-	_ "github.com/retro49/porter/scanner"
+	"github.com/retro49/porter/scanner"
 )
 
 func fromRange(s string) (int, int, error) {
@@ -151,6 +152,7 @@ func main() {
 			Help:     USAGE_SKIP,
 		},
 	)
+	_ = argSkip
 
 	parser.Parse(os.Args)
 
@@ -186,13 +188,13 @@ func main() {
 	if *argThreads < 1 {
 		logger.Error("threads", "given amount of  threads is not correct")
 		logger.Warn("help", "read the help messag on threads")
-                os.Exit(8)
+		os.Exit(8)
 	}
 
 	if *argTimeout < 1 {
 		logger.Error("timeout", "given amount of timeout is not correct")
 		logger.Warn("help", "read the help messag on threads")
-                os.Exit(9)
+		os.Exit(9)
 
 	}
 	// scan single port
@@ -201,6 +203,23 @@ func main() {
 			logger.Error("port", "given port is not a valid port")
 			os.Exit(5)
 		}
+
+		// create the necessery scan info
+		var info scanner.ScanInfo = scanner.ScanInfo{
+			Network:   *argNetwork,
+			Host:      *argHost,
+			StartPort: *argPort,
+			EndPort:   *argPort,
+			Step:      *argStep,
+			Timeout:   *argTimeout,
+			Skip:      []int{},
+			Threads:   *argThreads,
+			Format:    *argFormat,
+			Output:    *argOutput,
+		}
+		coordinnator := scanner.ScanCoordinator{Info: info}
+		coordinnator.StartScan()
+
 	} else if *argRange != "" {
 		// check the range sanity here.
 		if !strings.Contains(*argRange, "..") {
@@ -214,21 +233,41 @@ func main() {
 			logger.Warn("help", "read the help messag on how to format a range")
 			os.Exit(7)
 		}
-		logger.Debug("range_start", start)
-		logger.Debug("range_end", end)
+
+		// logger.Debug("range_start", start)
+		// logger.Debug("range_end", end)
+		var info scanner.ScanInfo = scanner.ScanInfo{
+			Network:   *argNetwork,
+			Host:      *argHost,
+			StartPort: start,
+			EndPort:   end,
+			Step:      *argStep,
+			Skip:      *argSkip,
+			Threads:   *argThreads,
+			Timeout:   *argTimeout,
+			Format:    *argFormat,
+			Output:    *argOutput,
+		}
+
+		coordinnator := scanner.ScanCoordinator{Info: info}
+		coordinnator.StartScan()
+
 	} else {
 		// a normal scan
-	}
+		var info scanner.ScanInfo = scanner.ScanInfo{
+			Network:   *argNetwork,
+			Host:      *argHost,
+			StartPort: *argStart,
+			EndPort:   *argEnd,
+			Step:      *argStep,
+			Skip:      *argSkip,
+			Threads:   *argThreads,
+			Timeout:   *argTimeout,
+			Format:    *argFormat,
+			Output:    *argOutput,
+		}
 
-	logger.Log("host", *argHost)
-	logger.Log("network", *argNetwork)
-	logger.Log("port", *argPort)
-	logger.Log("start", *argStart)
-	logger.Log("end", *argEnd)
-	logger.Log("range", *argRange)
-	logger.Log("step", *argStep)
-	logger.Log("format", *argFormat)
-	logger.Log("output", *argOutput)
-	logger.Log("threads", *argThreads)
-	logger.Log("skip", *argSkip)
+		coordinnator := scanner.ScanCoordinator{Info: info}
+		coordinnator.StartScan()
+	}
 }

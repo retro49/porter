@@ -4,91 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	_ "net"
 	"time"
 
 	"github.com/retro49/porter/plogger"
 )
 
-const (
-	SCANNER_NETWROK_TYPE_UDP string = "udp"
-	SCANNER_NETWORK_TYPE_TCP string = "tcp"
-	SCANNER_LOCAL_HOST              = "127.0.0.1"
-)
-
 var ERROR_INVALID_PORT_NUMBER = errors.New("invalid port number")
 
-/*
-// creates a new sequential scanner
-func NewScanner(network, host string, ports []int) (*scanner, error){
-    if network != SCANNER_NETWORK_TYPE_TCP && network != SCANNER_NETWROK_TYPE_UDP {
-        panic("error network type provided, network protocol must be ether tcp or udp")
-    }
-
-    if host == "" {
-        host = SCANNER_LOCAL_HOST
-    }
-
-    for _, port := range ports{
-        if port < 0 || port >= (1 << 16) {
-            return nil, ERROR_INVALID_PORT_NUMBER
-        }
-    }
-
-    return &scanner{
-        ports: ports,
-        host: host,
-        network: network,
-    }, nil
-}
-
-func (s scanner)scanPorts(response chan any){
-    ports := make([]int, 0)
-    for _, port := range s.ports {
-        _, err := net.Dial(s.network, fmt.Sprintf("%s:%d", s.host, port))
-        if err == nil{
-            ports = append(ports, port)
-        }
-    }
-    response<-ports
-}
-
-// scans the network
-func (s scanner)ScanWithInfo() []portInfo{
-    portScannerChannel := make(chan interface{})
-    jsonLoaderChannel := make(chan interface{})
-    go s.scanPorts(portScannerChannel)
-    go LoadPortInfo(jsonLoaderChannel)
-
-    jsonResponse := <- jsonLoaderChannel
-    portResponse := <- portScannerChannel
-
-    if jsonResponse == nil {
-        plogger.NewPlogger().Error("error json response" , "nil json result")
-    }
-
-    jsonPortInfo := jsonResponse.(map[string]map[string]string)
-    scannedPorts := portResponse.([]int)
-    result := make([]portInfo, 0)
-
-    // load into result
-    for _, scannedPort := range scannedPorts{
-        var key string = fmt.Sprintf("%d/%s", scannedPort, s.network)
-        var pf portInfo
-        if info, found := jsonPortInfo[key]; !found{
-            pf = NewPortInfo("", "", scannedPort)
-        } else {
-            pf = NewPortInfo(info["name"], info["description"], scannedPort)
-        }
-        result = append(result, pf)
-    }
-
-    return result
-}
-*/
-
 func fromInfo(s ScanCoordinator) []int {
-	var ports []int
+	ports := make([]int, 0)
 blk:
 	for i := s.Info.GetStart(); i <= s.Info.GetEnd(); i += s.Info.GetStep() {
 		for _, skip := range s.Info.GetSkip() {
@@ -102,17 +26,10 @@ blk:
 }
 
 func fromThreads(threads int, ports []int) [][]int {
-	var amt int
-	var total int = len(ports)
-	if total < threads {
-		amt = total
-	} else {
-		amt = threads
-	}
-	result := make([][]int, amt)
+	result := make([][]int, threads)
 	var i int = 0
 	for _, port := range ports {
-		if i > amt-1 {
+		if i > threads-1 {
 			i = 0
 		}
 		result[i] = append(result[i], port)
@@ -127,22 +44,31 @@ type ScanCoordinator struct {
 
 func (s ScanCoordinator) StartScan() {
 	logger := plogger.NewPlogger()
-	// create the ports from the provided info
 	ports := fromInfo(s)
-	threads := fromThreads(s.Info.GetThreads(), ports)
-	threadChannel := make(chan []int, s.Info.GetThreads())
+	thrds := s.Info.GetThreads()
+	if len(ports) < thrds {
+		plogger.NewPlogger().Debug("total threads...", thrds)
+		thrds = len(ports)
+	}
+
+	logger.Debug("total ports to scan", len(ports))
+	logger.Debug("total  threads", thrds)
+
+	threads := fromThreads(thrds, ports)
+	threadChannel := make(chan []int, thrds)
 	for _, thread := range threads {
 		// create a new scanner
 		scnr := scanner{
 			network: s.Info.GetNetwork(),
 			host:    s.Info.GetHost(),
-			timeout: time.Duration(s.Info.GetTimeout()),
+			timeout: time.Duration(s.Info.GetTimeout()) * time.Second,
 			ports:   thread,
 		}
 		go scnr.scan(threadChannel)
 	}
+
 	// retrive the scanned result
-	for i := 0; i < s.Info.GetThreads(); i++ {
+	for i := 0; i < thrds; i++ {
 		openPorts := <-threadChannel
 		logger.Debug("open ports", openPorts)
 	}
