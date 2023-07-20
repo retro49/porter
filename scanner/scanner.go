@@ -8,8 +8,7 @@ import (
 
 	"github.com/retro49/porter/plogger"
 )
-// hot remove...
-// just remove the logger in the scanner
+
 var ERROR_INVALID_PORT_NUMBER = errors.New("invalid port number")
 
 func fromInfo(s ScanCoordinator) []int {
@@ -48,17 +47,12 @@ func (s ScanCoordinator) StartScan() {
 	ports := fromInfo(s)
 	thrds := s.Info.GetThreads()
 	if len(ports) < thrds {
-		plogger.NewPlogger().Debug("total threads...", thrds)
 		thrds = len(ports)
 	}
-
-	logger.Debug("total ports to scan", len(ports))
-	logger.Debug("total  threads", thrds)
 
 	threads := fromThreads(thrds, ports)
 	threadChannel := make(chan []int, thrds)
 	for _, thread := range threads {
-		// create a new scanner
 		scnr := scanner{
 			network: s.Info.GetNetwork(),
 			host:    s.Info.GetHost(),
