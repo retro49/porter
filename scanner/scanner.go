@@ -112,18 +112,15 @@ func (s ScanCoordinator) ParseInfo(info []portInfo) []byte {
 }
 
 func (s ScanCoordinator) Write(buff []byte) {
-	// parse info
-	var file *os.File
 	if s.Info.GetOutput() == "" {
-		file = os.Stdout
-		Write(file, buff)
+		Write(os.Stdout, buff)
 	} else {
 		cwd, err := os.Getwd()
 		if err != nil {
 			panic("could not find current working directory")
 		}
-		if cwd[len(cwd)-1] != '/' {
-			cwd += "/"
+		if cwd[len(cwd)-1] != os.PathSeparator {
+			cwd += string(os.PathSeparator)
 		}
 		of := cwd + s.Info.GetOutput()
 		os.WriteFile(of, buff, 0770)

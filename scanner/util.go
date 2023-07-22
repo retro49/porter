@@ -9,8 +9,7 @@ import (
 	"github.com/retro49/porter/plogger"
 )
 
-// const JSON_PATH string = "/usr/share/porter/ports.json"
-const JSON_PATH string = "$HOME/ports.json"
+const JSON_PATH = "/usr/share/porter/ports.json"
 
 var LOADER_ERROR_READING_FILE_SIZE error = errors.New("error reading file size")
 var LOADER_ERROR_OPENING_FILE error = errors.New("error opening file")
@@ -21,18 +20,18 @@ var LOADER_ERROR_READING_CONTENT error = errors.New("error reading file content"
 type portInfo struct {
 	Name        string
 	Description string
-        Port        string
+	Port        string
 }
 
 // Enables to create a property about a
 // specific port number
 // with the name of the service and
 // description about the service.
-func NewPortInfo(port,  name, description string) portInfo {
+func NewPortInfo(port, name, description string) portInfo {
 	return portInfo{
 		Name:        name,
 		Description: description,
-                Port: port,
+		Port:        port,
 	}
 }
 
@@ -53,7 +52,7 @@ func (p portInfo) GetDescription() string {
 	return p.Description
 }
 
-func (p  portInfo) GetPort() string  {return p.Port}
+func (p portInfo) GetPort() string { return p.Port }
 
 // reads the json file and returns the stream
 func readJSON() ([]byte, error) {
@@ -105,7 +104,7 @@ func LoadPortInfo(ch chan any) {
 
 // a scan info for  providing the scanner
 type ScanInfo struct {
-        Network   string
+	Network   string
 	Host      string
 	StartPort int
 	EndPort   int
@@ -117,48 +116,49 @@ type ScanInfo struct {
 	Output    string
 }
 
-func (s ScanInfo) GetNetwork() string {return  s.Network}
-func (s ScanInfo) GetHost() string   { return s.Host }
-func (s ScanInfo) GetStart() int     { return s.StartPort }
-func (s ScanInfo) GetEnd() int       { return s.EndPort }
-func (s ScanInfo) GetStep() int      { return s.Step }
-func (s ScanInfo) GetSkip() []int    { return s.Skip }
-func (s ScanInfo) GetThreads() int   { return s.Threads }
-func (s ScanInfo) GetFormat() string { return s.Format }
-func (s ScanInfo) GetOutput() string { return s.Output }
-func (s ScanInfo) GetTimeout() int   { return s.Timeout }
+func (s ScanInfo) GetNetwork() string { return s.Network }
+func (s ScanInfo) GetHost() string    { return s.Host }
+func (s ScanInfo) GetStart() int      { return s.StartPort }
+func (s ScanInfo) GetEnd() int        { return s.EndPort }
+func (s ScanInfo) GetStep() int       { return s.Step }
+func (s ScanInfo) GetSkip() []int     { return s.Skip }
+func (s ScanInfo) GetThreads() int    { return s.Threads }
+func (s ScanInfo) GetFormat() string  { return s.Format }
+func (s ScanInfo) GetOutput() string  { return s.Output }
+func (s ScanInfo) GetTimeout() int    { return s.Timeout }
 
 // writer wrapper
-func Write(s *os.File, b []byte){
-    s.Write(b)
+func Write(s *os.File, b []byte) {
+	s.Write(b)
 }
 
-func ToStringArr(ports []int, service string)[]string{
-    res := make([]string, 0)
-    for _, port := range ports {
-        prt := fmt.Sprintf("%d/%s", port, service)
-        res = append(res, prt)
-    }
-    return res
+func ToStringArr(ports []int, service string) []string {
+	res := make([]string, 0)
+	for _, port := range ports {
+		prt := fmt.Sprintf("%d/%s", port, service)
+		res = append(res, prt)
+	}
+	return res
 }
 
-func InJson(jsonData *map[string]map[string]string, key string) (portInfo){
-    var name string
-    var description string
-    jsonValue, found := (*jsonData)[key] 
-    if !found{
-        return portInfo{
-            Name: "",
-            Description: "",
-        } 
-    }
-    name, found = jsonValue["name"]
-    if !found {
-        name = ""
-    }
-    description, found = jsonValue["description"]
-    if !found{
-        description = ""
-    }
-    return NewPortInfo(key, name, description)
+func InJson(jsonData *map[string]map[string]string, key string) portInfo {
+	var name string
+	var description string
+	jsonValue, found := (*jsonData)[key]
+	if !found {
+		return portInfo{
+			Name:        "",
+			Description: "",
+                        Port: key,
+		}
+	}
+	name, found = jsonValue["name"]
+	if !found {
+		name = ""
+	}
+	description, found = jsonValue["description"]
+	if !found {
+		description = ""
+	}
+	return NewPortInfo(key, name, description)
 }
