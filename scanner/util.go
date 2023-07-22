@@ -10,7 +10,7 @@ import (
 )
 
 // const JSON_PATH string = "/usr/share/porter/ports.json"
-const JSON_PATH string = "/home/retro/ports.json"
+const JSON_PATH string = "$HOME/ports.json"
 
 var LOADER_ERROR_READING_FILE_SIZE error = errors.New("error reading file size")
 var LOADER_ERROR_OPENING_FILE error = errors.New("error opening file")
