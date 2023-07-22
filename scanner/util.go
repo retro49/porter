@@ -3,11 +3,14 @@ package scanner
 import (
 	"encoding/json"
 	"errors"
-	"github.com/retro49/porter/plogger"
+	"fmt"
 	"os"
+
+	"github.com/retro49/porter/plogger"
 )
 
-const JSON_PATH string = "/usr/share/porter/ports.json"
+// const JSON_PATH string = "/usr/share/porter/ports.json"
+const JSON_PATH string = "/home/retro/ports.json"
 
 var LOADER_ERROR_READING_FILE_SIZE error = errors.New("error reading file size")
 var LOADER_ERROR_OPENING_FILE error = errors.New("error opening file")
@@ -18,18 +21,18 @@ var LOADER_ERROR_READING_CONTENT error = errors.New("error reading file content"
 type portInfo struct {
 	Name        string
 	Description string
-	Port        int
+        Port        string
 }
 
 // Enables to create a property about a
 // specific port number
 // with the name of the service and
 // description about the service.
-func NewPortInfo(name, description string, port int) portInfo {
+func NewPortInfo(port,  name, description string) portInfo {
 	return portInfo{
 		Name:        name,
 		Description: description,
-		Port:        port,
+                Port: port,
 	}
 }
 
@@ -50,10 +53,7 @@ func (p portInfo) GetDescription() string {
 	return p.Description
 }
 
-// returns the port number
-func (p portInfo) GetPort() int {
-	return p.Port
-}
+func (p  portInfo) GetPort() string  {return p.Port}
 
 // reads the json file and returns the stream
 func readJSON() ([]byte, error) {
@@ -127,3 +127,38 @@ func (s ScanInfo) GetThreads() int   { return s.Threads }
 func (s ScanInfo) GetFormat() string { return s.Format }
 func (s ScanInfo) GetOutput() string { return s.Output }
 func (s ScanInfo) GetTimeout() int   { return s.Timeout }
+
+// writer wrapper
+func Write(s *os.File, b []byte){
+    s.Write(b)
+}
+
+func ToStringArr(ports []int, service string)[]string{
+    res := make([]string, 0)
+    for _, port := range ports {
+        prt := fmt.Sprintf("%d/%s", port, service)
+        res = append(res, prt)
+    }
+    return res
+}
+
+func InJson(jsonData *map[string]map[string]string, key string) (portInfo){
+    var name string
+    var description string
+    jsonValue, found := (*jsonData)[key] 
+    if !found{
+        return portInfo{
+            Name: "",
+            Description: "",
+        } 
+    }
+    name, found = jsonValue["name"]
+    if !found {
+        name = ""
+    }
+    description, found = jsonValue["description"]
+    if !found{
+        description = ""
+    }
+    return NewPortInfo(key, name, description)
+}

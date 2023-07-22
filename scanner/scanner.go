@@ -1,9 +1,11 @@
 package scanner
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
+	"os"
 	"time"
 
 	"github.com/retro49/porter/plogger"
@@ -43,7 +45,6 @@ type ScanCoordinator struct {
 }
 
 func (s ScanCoordinator) StartScan() {
-	logger := plogger.NewPlogger()
 	ports := fromInfo(s)
 	thrds := s.Info.GetThreads()
 	if len(ports) < thrds {
@@ -52,6 +53,10 @@ func (s ScanCoordinator) StartScan() {
 
 	threads := fromThreads(thrds, ports)
 	threadChannel := make(chan []int, thrds)
+
+	jsonChannel := make(chan any)
+	go LoadPortInfo(jsonChannel)
+
 	for _, thread := range threads {
 		scnr := scanner{
 			network: s.Info.GetNetwork(),
@@ -62,10 +67,66 @@ func (s ScanCoordinator) StartScan() {
 		go scnr.scan(threadChannel)
 	}
 
-	// retrive the scanned result
-	for i := 0; i < thrds; i++ {
-		openPorts := <-threadChannel
-		logger.Debug("open ports", openPorts)
+	jsonChannelResult := <-jsonChannel
+	jr := jsonChannelResult.(map[string]map[string]string) // json result
+	s.Retrive(thrds, threadChannel, &jr)
+}
+
+func (s ScanCoordinator) Retrive(
+	threads int,
+	scanChannel chan []int,
+	jsonResult *map[string]map[string]string,
+) {
+	var out []portInfo = make([]portInfo, 0)
+	for i := 0; i < threads; i++ {
+		openPorts := <-scanChannel
+		if len(openPorts) != 0 {
+			strPorts := ToStringArr(openPorts, s.Info.GetNetwork())
+			for _, sprt := range strPorts {
+				jout := InJson(jsonResult, sprt)
+				out = append(out, jout)
+			}
+		}
+	}
+
+	s.Write(s.ParseInfo(out))
+}
+
+func (s ScanCoordinator) ParseInfo(info []portInfo) []byte {
+	if s.Info.GetFormat() == "json" {
+		b, err := json.Marshal(info)
+		if err != nil {
+			plogger.NewPlogger().Error("decoding", err)
+			panic("error occured while decoding...")
+		}
+		return b
+	}
+
+	var buff string
+	for _, p := range info {
+		formatted := fmt.Sprintf("%-20s%-10s%10s\n", p.GetPort(), p.GetName(), p.GetDescription())
+		buff += formatted
+	}
+
+	return []byte(buff)
+}
+
+func (s ScanCoordinator) Write(buff []byte) {
+	// parse info
+	var file *os.File
+	if s.Info.GetOutput() == "" {
+		file = os.Stdout
+		Write(file, buff)
+	} else {
+		cwd, err := os.Getwd()
+		if err != nil {
+			panic("could not find current working directory")
+		}
+		if cwd[len(cwd)-1] != '/' {
+			cwd += "/"
+		}
+		of := cwd + s.Info.GetOutput()
+		os.WriteFile(of, buff, 0770)
 	}
 }
 
