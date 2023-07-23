@@ -146,11 +146,7 @@ func InJson(jsonData *map[string]map[string]string, key string) portInfo {
 	var description string
 	jsonValue, found := (*jsonData)[key]
 	if !found {
-		return portInfo{
-			Name:        "",
-			Description: "",
-                        Port: key,
-		}
+            return NewPortInfo(key, "", "")
 	}
 	name, found = jsonValue["name"]
 	if !found {

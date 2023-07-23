@@ -152,7 +152,6 @@ func main() {
 			Help:     USAGE_SKIP,
 		},
 	)
-	_ = argSkip
 
 	parser.Parse(os.Args)
 
@@ -236,6 +235,7 @@ func main() {
 
 		// logger.Debug("range_start", start)
 		// logger.Debug("range_end", end)
+                logger.Debug("skip", *argSkip)
 		var info scanner.ScanInfo = scanner.ScanInfo{
 			Network:   *argNetwork,
 			Host:      *argHost,

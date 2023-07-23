@@ -15,11 +15,11 @@ var ERROR_INVALID_PORT_NUMBER = errors.New("invalid port number")
 
 func fromInfo(s ScanCoordinator) []int {
 	ports := make([]int, 0)
-blk:
-	for i := s.Info.GetStart(); i <= s.Info.GetEnd(); i += s.Info.GetStep() {
+
+        skp: for i := s.Info.GetStart(); i <= s.Info.GetEnd(); i += s.Info.GetStep() {
 		for _, skip := range s.Info.GetSkip() {
 			if i == skip {
-				continue blk
+				continue skp 
 			}
 		}
 		ports = append(ports, i)
@@ -54,6 +54,7 @@ func (s ScanCoordinator) StartScan() {
 	threads := fromThreads(thrds, ports)
 	threadChannel := make(chan []int, thrds)
 
+        fmt.Println("timeout: ", s.Info.GetTimeout())
 	jsonChannel := make(chan any)
 	go LoadPortInfo(jsonChannel)
 
@@ -61,7 +62,7 @@ func (s ScanCoordinator) StartScan() {
 		scnr := scanner{
 			network: s.Info.GetNetwork(),
 			host:    s.Info.GetHost(),
-			timeout: time.Duration(s.Info.GetTimeout()) * time.Second,
+			timeout: time.Duration(time.Duration(s.Info.GetTimeout()) * time.Second),
 			ports:   thread,
 		}
 		go scnr.scan(threadChannel)
@@ -94,7 +95,8 @@ func (s ScanCoordinator) Retrive(
 
 func (s ScanCoordinator) ParseInfo(info []portInfo) []byte {
 	if s.Info.GetFormat() == "json" {
-		b, err := json.Marshal(info)
+		// b, err := json.Marshal(info)
+                b, err := json.MarshalIndent(info, "    ", "\n")
 		if err != nil {
 			plogger.NewPlogger().Error("decoding", err)
 			panic("error occured while decoding...")
@@ -103,8 +105,10 @@ func (s ScanCoordinator) ParseInfo(info []portInfo) []byte {
 	}
 
 	var buff string
+        fmt.Printf("%-20s%-20s%-20s\n", "port", "name", "description")
+        fmt.Printf("%-20s%-20s%-20s\n", "----", "----", "-----------")
 	for _, p := range info {
-		formatted := fmt.Sprintf("%-20s%-10s%10s\n", p.GetPort(), p.GetName(), p.GetDescription())
+		formatted := fmt.Sprintf("%-20s%-20s%-20s\n", p.GetPort(), p.GetName(), p.GetDescription())
 		buff += formatted
 	}
 
