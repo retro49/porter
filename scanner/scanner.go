@@ -16,10 +16,11 @@ var ERROR_INVALID_PORT_NUMBER = errors.New("invalid port number")
 func fromInfo(s ScanCoordinator) []int {
 	ports := make([]int, 0)
 
-        skp: for i := s.Info.GetStart(); i <= s.Info.GetEnd(); i += s.Info.GetStep() {
+skp:
+	for i := s.Info.GetStart(); i <= s.Info.GetEnd(); i += s.Info.GetStep() {
 		for _, skip := range s.Info.GetSkip() {
 			if i == skip {
-				continue skp 
+				continue skp
 			}
 		}
 		ports = append(ports, i)
@@ -46,7 +47,9 @@ type ScanCoordinator struct {
 
 func (s ScanCoordinator) Write(buff []byte) {
 	if s.Info.GetOutput() == "" {
-                os.Stdout.Write(buff)
+		fmt.Printf("%-20s%-20s%-20s\n", "port", "name", "description")
+		fmt.Printf("%-20s%-20s%-20s\n", "----", "----", "-----------")
+		os.Stdout.Write(buff)
 	} else {
 		cwd, err := os.Getwd()
 		if err != nil {
@@ -63,7 +66,7 @@ func (s ScanCoordinator) Write(buff []byte) {
 func (s ScanCoordinator) ParseInfo(info []portInfo) []byte {
 	if s.Info.GetFormat() == "json" {
 		// b, err := json.Marshal(info)
-                b, err := json.MarshalIndent(info, "", "")
+		b, err := json.MarshalIndent(info, "", "")
 		if err != nil {
 			plogger.NewPlogger().Error("decoding", err)
 			panic("error occured while decoding...")
@@ -72,10 +75,8 @@ func (s ScanCoordinator) ParseInfo(info []portInfo) []byte {
 	}
 
 	var buff string
-        fmt.Printf("%-20s%-20s%-20s\n", "port", "name", "description")
-        fmt.Printf("%-20s%-20s%-20s\n", "----", "----", "-----------")
 	for _, p := range info {
-                buff += fmt.Sprintf("%-20s%-20s%-20s\n", p.GetPort(), p.GetName(), p.GetDescription())
+		buff += fmt.Sprintf("%-20s%-20s%-20s\n", p.GetPort(), p.GetName(), p.GetDescription())
 	}
 
 	return []byte(buff)
