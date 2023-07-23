@@ -226,6 +226,7 @@ func main() {
 			logger.Warn("help", "read the help messag on how to format a range")
 			os.Exit(6)
 		}
+
 		start, end, err := fromRange(*argRange)
 		if err != nil {
 			logger.Error("range", "given range error is not valid")
@@ -233,9 +234,6 @@ func main() {
 			os.Exit(7)
 		}
 
-		// logger.Debug("range_start", start)
-		// logger.Debug("range_end", end)
-                logger.Debug("skip", *argSkip)
 		var info scanner.ScanInfo = scanner.ScanInfo{
 			Network:   *argNetwork,
 			Host:      *argHost,

@@ -44,33 +44,41 @@ type ScanCoordinator struct {
 	Info ScanInfo
 }
 
-func (s ScanCoordinator) StartScan() {
-	ports := fromInfo(s)
-	thrds := s.Info.GetThreads()
-	if len(ports) < thrds {
-		thrds = len(ports)
-	}
-
-	threads := fromThreads(thrds, ports)
-	threadChannel := make(chan []int, thrds)
-
-        fmt.Println("timeout: ", s.Info.GetTimeout())
-	jsonChannel := make(chan any)
-	go LoadPortInfo(jsonChannel)
-
-	for _, thread := range threads {
-		scnr := scanner{
-			network: s.Info.GetNetwork(),
-			host:    s.Info.GetHost(),
-			timeout: time.Duration(time.Duration(s.Info.GetTimeout()) * time.Second),
-			ports:   thread,
+func (s ScanCoordinator) Write(buff []byte) {
+	if s.Info.GetOutput() == "" {
+                os.Stdout.Write(buff)
+	} else {
+		cwd, err := os.Getwd()
+		if err != nil {
+			panic("could not find current working directory")
 		}
-		go scnr.scan(threadChannel)
+		if cwd[len(cwd)-1] != os.PathSeparator {
+			cwd += string(os.PathSeparator)
+		}
+		of := cwd + s.Info.GetOutput()
+		os.WriteFile(of, buff, 0770)
+	}
+}
+
+func (s ScanCoordinator) ParseInfo(info []portInfo) []byte {
+	if s.Info.GetFormat() == "json" {
+		// b, err := json.Marshal(info)
+                b, err := json.MarshalIndent(info, "", "")
+		if err != nil {
+			plogger.NewPlogger().Error("decoding", err)
+			panic("error occured while decoding...")
+		}
+		return b
 	}
 
-	jsonChannelResult := <-jsonChannel
-	jr := jsonChannelResult.(map[string]map[string]string) // json result
-	s.Retrive(thrds, threadChannel, &jr)
+	var buff string
+        fmt.Printf("%-20s%-20s%-20s\n", "port", "name", "description")
+        fmt.Printf("%-20s%-20s%-20s\n", "----", "----", "-----------")
+	for _, p := range info {
+                buff += fmt.Sprintf("%-20s%-20s%-20s\n", p.GetPort(), p.GetName(), p.GetDescription())
+	}
+
+	return []byte(buff)
 }
 
 func (s ScanCoordinator) Retrive(
@@ -93,42 +101,32 @@ func (s ScanCoordinator) Retrive(
 	s.Write(s.ParseInfo(out))
 }
 
-func (s ScanCoordinator) ParseInfo(info []portInfo) []byte {
-	if s.Info.GetFormat() == "json" {
-		// b, err := json.Marshal(info)
-                b, err := json.MarshalIndent(info, "    ", "\n")
-		if err != nil {
-			plogger.NewPlogger().Error("decoding", err)
-			panic("error occured while decoding...")
-		}
-		return b
+func (s ScanCoordinator) StartScan() {
+	ports := fromInfo(s)
+	thrds := s.Info.GetThreads()
+	if len(ports) < thrds {
+		thrds = len(ports)
 	}
 
-	var buff string
-        fmt.Printf("%-20s%-20s%-20s\n", "port", "name", "description")
-        fmt.Printf("%-20s%-20s%-20s\n", "----", "----", "-----------")
-	for _, p := range info {
-		formatted := fmt.Sprintf("%-20s%-20s%-20s\n", p.GetPort(), p.GetName(), p.GetDescription())
-		buff += formatted
+	threads := fromThreads(thrds, ports)
+	threadChannel := make(chan []int, thrds)
+
+	jsonChannel := make(chan any)
+	go LoadPortInfo(jsonChannel)
+
+	for _, thread := range threads {
+		scnr := scanner{
+			network: s.Info.GetNetwork(),
+			host:    s.Info.GetHost(),
+			timeout: time.Duration(time.Duration(s.Info.GetTimeout()) * time.Second),
+			ports:   thread,
+		}
+		go scnr.scan(threadChannel)
 	}
 
-	return []byte(buff)
-}
-
-func (s ScanCoordinator) Write(buff []byte) {
-	if s.Info.GetOutput() == "" {
-		Write(os.Stdout, buff)
-	} else {
-		cwd, err := os.Getwd()
-		if err != nil {
-			panic("could not find current working directory")
-		}
-		if cwd[len(cwd)-1] != os.PathSeparator {
-			cwd += string(os.PathSeparator)
-		}
-		of := cwd + s.Info.GetOutput()
-		os.WriteFile(of, buff, 0770)
-	}
+	jsonChannelResult := <-jsonChannel
+	jr := jsonChannelResult.(*map[string]map[string]string) // json result
+	s.Retrive(thrds, threadChannel, jr)
 }
 
 type scanner struct {

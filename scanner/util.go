@@ -36,21 +36,10 @@ func NewPortInfo(port, name, description string) portInfo {
 }
 
 // returns the name of the port.
-func (p portInfo) GetName() string {
-	if p.Name == "" {
-		return "unknown"
-	}
-	return p.Name
-}
+func (p portInfo) GetName() string { return p.Name }
 
 // returns the description of the port.
-func (p portInfo) GetDescription() string {
-	if p.Description == "" {
-		return "unkown"
-	}
-
-	return p.Description
-}
+func (p portInfo) GetDescription() string { return p.Description }
 
 func (p portInfo) GetPort() string { return p.Port }
 
@@ -99,7 +88,7 @@ func LoadPortInfo(ch chan any) {
 		plogger.NewPlogger().Error("error decodig", "error while decoding json")
 		ch <- nil
 	}
-	ch <- portInfo
+	ch <- &portInfo
 }
 
 // a scan info for  providing the scanner
@@ -127,11 +116,6 @@ func (s ScanInfo) GetFormat() string  { return s.Format }
 func (s ScanInfo) GetOutput() string  { return s.Output }
 func (s ScanInfo) GetTimeout() int    { return s.Timeout }
 
-// writer wrapper
-func Write(s *os.File, b []byte) {
-	s.Write(b)
-}
-
 func ToStringArr(ports []int, service string) []string {
 	res := make([]string, 0)
 	for _, port := range ports {
@@ -146,15 +130,15 @@ func InJson(jsonData *map[string]map[string]string, key string) portInfo {
 	var description string
 	jsonValue, found := (*jsonData)[key]
 	if !found {
-            return NewPortInfo(key, "", "")
+		return NewPortInfo(key, "unkown", "unkown")
 	}
 	name, found = jsonValue["name"]
 	if !found {
-		name = ""
+		name = "unkownn"
 	}
 	description, found = jsonValue["description"]
 	if !found {
-		description = ""
+		description = "unkown"
 	}
 	return NewPortInfo(key, name, description)
 }
