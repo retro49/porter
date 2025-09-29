@@ -8,6 +8,7 @@ CMD_FOUND=0
 CMD_NOT_FOUND=127
 
 show_banner(){
+	echo -e ""
     echo -e "$COL_GREEN  ____ $COL_NORMAL   _   ____ _____ _____ ____        "
     echo -e "$COL_GREEN |  _ \ $COL_NORMAL/ _ \|  _ \_   _| ____|  _ \       "
     echo -e "$COL_GREEN | |_) |$COL_NORMAL | | | |_) || | |  _| | |_) |      "
